@@ -48,3 +48,6 @@ terraform.rc
 
 # Exclude application source directory from Git tracking
 app/
+
+# Exclude Terraform backend configuration files
+backend.hcl
