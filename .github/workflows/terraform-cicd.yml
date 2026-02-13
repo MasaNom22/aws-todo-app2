@@ -16,14 +16,22 @@ on:
       - "modules/**"
       - ".github/workflows/terraform-cicd.yml"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  AWS_REGION: ap-northeast-1
   TERRAFORM_VERSION: "1.5.7"
+  TF_IN_AUTOMATION: "true"
 
 jobs:
   terraform-fmt:
     name: Terraform Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -33,13 +41,21 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
 
       - name: Terraform Format Check
-        run: terraform fmt -check -recursive
-        
+        run: terraform fmt -check -recursive -diff
+
   tflint:
-    name: TFLint
+    name: TFLint (environments/${{ matrix.environment }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        environment:
+          - bootstrap
+          - dev
 
     steps:
       - name: Checkout code
@@ -49,24 +65,29 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
       - name: Init TFLint
-        run: tflint --init
+        run: tflint --chdir=environments/${{ matrix.environment }} --init
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Run TFLint (environments/bootstrap)
-        run: tflint --chdir=environments/bootstrap
+      - name: Run TFLint
+        run: tflint --chdir=environments/${{ matrix.environment }}
 
-      - name: Run TFLint (environments/dev)
-        run: tflint --chdir=environments/dev
-        
   terraform-validate:
-    name: Terraform Validate
+    name: Terraform Validate (environments/${{ matrix.environment }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        environment:
+          - bootstrap
+          - dev
 
     steps:
       - name: Checkout code
@@ -76,15 +97,10 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
 
-      - name: Terraform Init (environments/bootstrap)
-        run: terraform -chdir=environments/bootstrap init -backend=false
+      - name: Terraform Init
+        run: terraform -chdir=environments/${{ matrix.environment }} init -backend=false -input=false -lockfile=readonly -no-color
 
-      - name: Terraform Validate (environments/bootstrap)
-        run: terraform -chdir=environments/bootstrap validate
-
-      - name: Terraform Init (environments/dev)
-        run: terraform -chdir=environments/dev init -backend=false
-
-      - name: Terraform Validate (environments/dev)
-        run: terraform -chdir=environments/dev validate
+      - name: Terraform Validate
+        run: terraform -chdir=environments/${{ matrix.environment }} validate -no-color
