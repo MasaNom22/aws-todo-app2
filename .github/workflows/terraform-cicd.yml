@@ -62,4 +62,29 @@ jobs:
         run: tflint --chdir=environments/bootstrap
 
       - name: Run TFLint (environments/dev)
-        run: tflint --chdir=environments/dev        
+        run: tflint --chdir=environments/dev
+        
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Terraform Init (environments/bootstrap)
+        run: terraform -chdir=environments/bootstrap init -backend=false
+
+      - name: Terraform Validate (environments/bootstrap)
+        run: terraform -chdir=environments/bootstrap validate
+
+      - name: Terraform Init (environments/dev)
+        run: terraform -chdir=environments/dev init -backend=false
+
+      - name: Terraform Validate (environments/dev)
+        run: terraform -chdir=environments/dev validate
