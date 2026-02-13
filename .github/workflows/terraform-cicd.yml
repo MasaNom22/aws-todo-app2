@@ -35,4 +35,31 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Terraform Format Check
-        run: terraform fmt -check -recursive  
+        run: terraform fmt -check -recursive
+        
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run TFLint (environments/bootstrap)
+        run: tflint --chdir=environments/bootstrap
+
+      - name: Run TFLint (environments/dev)
+        run: tflint --chdir=environments/dev        
