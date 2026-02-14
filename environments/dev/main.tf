@@ -26,4 +26,5 @@ module "vpc" {
   environment    = var.environment
   project_name   = var.project_name
   common_tags    = var.common_tags
+  subnets        = var.subnets
 }
