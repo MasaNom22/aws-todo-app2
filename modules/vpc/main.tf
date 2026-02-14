@@ -38,6 +38,21 @@ resource "aws_subnet" "public" {
   )
 }
 
+resource "aws_subnet" "private" {
+  for_each                = var.subnets
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = each.value.private_cidr
+  availability_zone       = each.key
+  map_public_ip_on_launch = false
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.project_name}-${var.environment}-private-subnet-${each.key}"
+    }
+  )
+}
+
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.vpc.id
 
