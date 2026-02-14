@@ -35,3 +35,8 @@ variable "subnets" {
     private_cidr = string
   }))
 }
+
+variable "ecr_repository_name" {
+  type        = string
+  description = "ECR repository name"
+}

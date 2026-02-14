@@ -28,3 +28,12 @@ module "vpc" {
   common_tags    = var.common_tags
   subnets        = var.subnets
 }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name = var.ecr_repository_name
+  project_name    = var.project_name
+  environment     = var.environment
+  common_tags     = var.common_tags
+}
