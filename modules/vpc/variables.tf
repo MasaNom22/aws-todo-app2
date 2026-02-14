@@ -21,7 +21,7 @@ variable "common_tags" {
 variable "subnets" {
   description = "Subnet configuration per AZ"
   type = map(object({
-    public_cidr = string
+    public_cidr  = string
     private_cidr = string
   }))
 }
