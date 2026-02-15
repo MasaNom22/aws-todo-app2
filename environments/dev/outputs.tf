@@ -27,6 +27,7 @@ output "ecr_repository_url" {
 output "ecs_cluster_id" {
   description = "The ID of the ECS cluster"
   value       = module.ecs.cluster_id
+  sensitive   = true
 }
 
 output "ecs_cluster_name" {
