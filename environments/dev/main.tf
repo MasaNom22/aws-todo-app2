@@ -47,3 +47,13 @@ module "ecs" {
   region             = var.region
   ecr_repository_url = module.ecr.repository_url
 }
+
+module "alb" {
+  source = "../../modules/alb"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  common_tags       = var.common_tags
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+}
