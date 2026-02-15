@@ -1,10 +1,12 @@
-# TerraformでAWSへリソースをデプロイ
+# TerraformでAWSへECSをデプロイ
 
-TerraformのコードでAWS環境へリソースをデプロイします。
+TerraformのコードでAWS環境へECSをデプロイします。
 
 ## 構成要素
 VPC  
 ECR  
+ECS  
+ALB  
 Remote State(S3+Dynamo DB)  
 GitHub Actions CI(terraform fmt・terraform validate・tflint)  
 
@@ -16,5 +18,7 @@ todo-web-app/
 │   ├── bootstrap/                # リモートステート(S3・DynamoDB)・OIDC Provider  
 │   └── dev/                      # 開発環境  
 ├── modules/   
+│   ├── alb/                      # ロードバランサー  
 │   ├── ecr/                      # コンテナレジストリ・スキャン  
+│   ├── ecs/                      # Nginxコンテナ  
 │   └── vpc/                      # VPC・IGW・Subnet・NAT Gateway   
