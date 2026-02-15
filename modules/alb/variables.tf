@@ -22,3 +22,15 @@ variable "public_subnet_ids" {
   type        = list(string)
   description = "List of public subnet IDs for ALB"
 }
+
+variable "container_port" {
+  type        = number
+  description = "Port the container listens on"
+  default     = 80
+}
+
+variable "health_check_path" {
+  type        = string
+  description = "Health check path for target group"
+  default     = "/"
+}

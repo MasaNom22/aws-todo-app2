@@ -58,3 +58,24 @@ variable "region" {
   type        = string
   description = "AWS region"
 }
+
+variable "desired_count" {
+  type        = number
+  description = "Desired number of ECS tasks"
+  default     = 1
+}
+
+variable "private_subnet_ids" {
+  type        = list(string)
+  description = "List of private subnet IDs for ECS tasks"
+}
+
+variable "ecs_security_group_id" {
+  type        = string
+  description = "Security group ID for ECS tasks (created externally)"
+}
+
+variable "target_group_arn" {
+  type        = string
+  description = "ARN of the ALB target group"
+}
