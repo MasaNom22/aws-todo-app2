@@ -12,3 +12,49 @@ variable "common_tags" {
   description = "Common tags to be applied to all resources"
   type        = map(string)
 }
+
+variable "ecr_repository_url" {
+  type        = string
+  description = "ECR repository URL for the container image"
+}
+
+variable "container_name" {
+  type        = string
+  description = "Name of the container"
+  default     = "todo-app"
+}
+
+variable "container_port" {
+  type        = number
+  description = "Port the container listens on"
+  default     = 80
+}
+
+variable "image_tag" {
+  type        = string
+  description = "Container image tag"
+  default     = "latest"
+}
+
+variable "task_cpu" {
+  type        = number
+  description = "CPU units for the task (256 = 0.25 vCPU)"
+  default     = 256
+}
+
+variable "task_memory" {
+  type        = number
+  description = "Memory in MiB for the task"
+  default     = 512
+}
+
+variable "log_retention_in_days" {
+  type        = number
+  description = "CloudWatch log group retention in days"
+  default     = 30
+}
+
+variable "region" {
+  type        = string
+  description = "AWS region"
+}

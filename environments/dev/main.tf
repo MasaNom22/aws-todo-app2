@@ -41,7 +41,9 @@ module "ecr" {
 module "ecs" {
   source = "../../modules/ecs"
 
-  project_name = var.project_name
-  environment  = var.environment
-  common_tags  = var.common_tags
+  project_name       = var.project_name
+  environment        = var.environment
+  common_tags        = var.common_tags
+  region             = var.region
+  ecr_repository_url = module.ecr.repository_url
 }
