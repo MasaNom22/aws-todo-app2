@@ -52,3 +52,21 @@ variable "health_check_path" {
   description = "Health check path for ALB target group"
   default     = "/health"
 }
+
+variable "node_env" {
+  type        = string
+  description = "NODE_ENV value passed to ECS container"
+  default     = "production"
+}
+
+variable "db_ssl" {
+  type        = string
+  description = "DB_SSL value passed to ECS container"
+  default     = "true"
+}
+
+variable "secrets_kms_key_arn" {
+  type        = string
+  description = "KMS key ARN used by Secrets Manager secret. Empty when using AWS managed key."
+  default     = ""
+}

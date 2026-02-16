@@ -79,3 +79,33 @@ variable "target_group_arn" {
   type        = string
   description = "ARN of the ALB target group"
 }
+
+variable "db_secret_arn" {
+  type        = string
+  description = "ARN of Secrets Manager secret containing DB credentials"
+  default     = ""
+}
+
+variable "enable_db_secret_access" {
+  type        = bool
+  description = "Enable DB secret injection and IAM access policy for ECS task execution role"
+  default     = false
+}
+
+variable "node_env" {
+  type        = string
+  description = "NODE_ENV value passed to the container"
+  default     = "production"
+}
+
+variable "db_ssl" {
+  type        = string
+  description = "DB_SSL value passed to the container"
+  default     = "true"
+}
+
+variable "secrets_kms_key_arn" {
+  type        = string
+  description = "KMS key ARN used by Secrets Manager secret. Empty when using AWS managed key."
+  default     = ""
+}

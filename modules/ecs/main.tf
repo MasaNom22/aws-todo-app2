@@ -27,6 +27,42 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
   }
 }
 
+locals {
+  container_environment = [
+    {
+      name  = "NODE_ENV"
+      value = var.node_env
+    },
+    {
+      name  = "DB_SSL"
+      value = var.db_ssl
+    }
+  ]
+
+  container_secrets = var.enable_db_secret_access ? [
+    {
+      name      = "DB_HOST"
+      valueFrom = "${var.db_secret_arn}:host::"
+    },
+    {
+      name      = "DB_PORT"
+      valueFrom = "${var.db_secret_arn}:port::"
+    },
+    {
+      name      = "DB_NAME"
+      valueFrom = "${var.db_secret_arn}:dbname::"
+    },
+    {
+      name      = "DB_USER"
+      valueFrom = "${var.db_secret_arn}:username::"
+    },
+    {
+      name      = "DB_PASSWORD"
+      valueFrom = "${var.db_secret_arn}:password::"
+    }
+  ] : []
+}
+
 resource "aws_iam_role" "task_execution_role" {
   name               = "${var.project_name}-${var.environment}-ecs-task-execution-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
@@ -42,6 +78,32 @@ resource "aws_iam_role" "task_execution_role" {
 resource "aws_iam_role_policy_attachment" "task_execution_role_policy" {
   role       = aws_iam_role.task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+data "aws_iam_policy_document" "task_execution_secret_access" {
+  count = var.enable_db_secret_access ? 1 : 0
+
+  statement {
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue"]
+    resources = [var.db_secret_arn]
+  }
+
+  dynamic "statement" {
+    for_each = var.secrets_kms_key_arn != "" ? [var.secrets_kms_key_arn] : []
+    content {
+      effect    = "Allow"
+      actions   = ["kms:Decrypt"]
+      resources = [statement.value]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "task_execution_secret_access" {
+  count  = var.enable_db_secret_access ? 1 : 0
+  name   = "${var.project_name}-${var.environment}-ecs-secrets-access"
+  role   = aws_iam_role.task_execution_role.name
+  policy = data.aws_iam_policy_document.task_execution_secret_access[0].json
 }
 
 resource "aws_iam_role" "task_role" {
@@ -78,28 +140,34 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn            = aws_iam_role.task_role.arn
 
   container_definitions = jsonencode([
-    {
-      name      = var.container_name
-      image     = "${var.ecr_repository_url}:${var.image_tag}"
-      essential = true
+    merge(
+      {
+        name        = var.container_name
+        image       = "${var.ecr_repository_url}:${var.image_tag}"
+        essential   = true
+        environment = local.container_environment
 
-      portMappings = [
-        {
-          containerPort = var.container_port
-          hostPort      = var.container_port
-          protocol      = "tcp"
-        }
-      ]
+        portMappings = [
+          {
+            containerPort = var.container_port
+            hostPort      = var.container_port
+            protocol      = "tcp"
+          }
+        ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.this.name
-          "awslogs-region"        = var.region
-          "awslogs-stream-prefix" = "ecs"
+        logConfiguration = {
+          logDriver = "awslogs"
+          options = {
+            "awslogs-group"         = aws_cloudwatch_log_group.this.name
+            "awslogs-region"        = var.region
+            "awslogs-stream-prefix" = "ecs"
+          }
         }
-      }
-    }
+      },
+      length(local.container_secrets) > 0 ? {
+        secrets = local.container_secrets
+      } : {}
+    )
   ])
 
   tags = merge(

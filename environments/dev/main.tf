@@ -39,17 +39,22 @@ module "ecr" {
 }
 
 module "ecs" {
-  source                = "../../modules/ecs"
-  depends_on            = [module.alb]
-  project_name          = var.project_name
-  environment           = var.environment
-  common_tags           = var.common_tags
-  region                = var.region
-  ecr_repository_url    = module.ecr.repository_url
-  container_port        = var.container_port
-  private_subnet_ids    = module.vpc.private_subnet_ids
-  ecs_security_group_id = aws_security_group.ecs_tasks.id
-  target_group_arn      = module.alb.target_group_arn
+  source                  = "../../modules/ecs"
+  depends_on              = [module.alb]
+  project_name            = var.project_name
+  environment             = var.environment
+  common_tags             = var.common_tags
+  region                  = var.region
+  ecr_repository_url      = module.ecr.repository_url
+  container_port          = var.container_port
+  private_subnet_ids      = module.vpc.private_subnet_ids
+  ecs_security_group_id   = aws_security_group.ecs_tasks.id
+  target_group_arn        = module.alb.target_group_arn
+  enable_db_secret_access = true
+  db_secret_arn           = module.secretsmanager.secret_arn
+  node_env                = var.node_env
+  db_ssl                  = var.db_ssl
+  secrets_kms_key_arn     = var.secrets_kms_key_arn
 }
 
 module "alb" {
@@ -62,6 +67,37 @@ module "alb" {
   public_subnet_ids = module.vpc.public_subnet_ids
   container_port    = var.container_port
   health_check_path = var.health_check_path
+}
+
+module "rds" {
+  source = "../../modules/rds"
+
+  project_name          = var.project_name
+  environment           = var.environment
+  common_tags           = var.common_tags
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  ecs_security_group_id = aws_security_group.ecs_tasks.id
+  db_password           = random_password.db_password.result
+}
+
+module "secretsmanager" {
+  source = "../../modules/secretsmanager"
+
+  project_name = var.project_name
+  environment  = var.environment
+  common_tags  = var.common_tags
+  db_host      = module.rds.db_instance_address
+  db_port      = module.rds.db_instance_port
+  db_name      = module.rds.db_name
+  db_username  = module.rds.db_username
+  db_password  = random_password.db_password.result
+}
+
+resource "random_password" "db_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "aws_security_group" "ecs_tasks" {
