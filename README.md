@@ -7,6 +7,8 @@ VPC
 ECR  
 ECS  
 ALB  
+RDS  
+Secrets Manager
 Remote State(S3+Dynamo DB)  
 GitHub Actions CI(terraform fmt・terraform validate・tflint)  
 
@@ -21,4 +23,6 @@ todo-web-app/
 │   ├── alb/                      # ロードバランサー  
 │   ├── ecr/                      # コンテナレジストリ・スキャン  
 │   ├── ecs/                      # Nginxコンテナ  
+│   ├── rds/                      # DB（PostgreSQL）  
+│   ├── secretsmanager/           # DBへの接続情報    
 │   └── vpc/                      # VPC・IGW・Subnet・NAT Gateway   
