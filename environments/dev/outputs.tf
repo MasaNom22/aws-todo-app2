@@ -34,3 +34,21 @@ output "ecs_cluster_name" {
   description = "The name of the ECS cluster"
   value       = module.ecs.cluster_name
 }
+
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint address"
+  value       = module.rds.db_instance_address
+  sensitive   = true
+}
+
+output "db_secret_arn" {
+  description = "Secrets Manager ARN containing database credentials"
+  value       = module.secretsmanager.secret_arn
+  sensitive   = true
+}
+
+output "alb_dns_name" {
+  description = "DNS name of the Application Load Balancer"
+  value       = module.alb.alb_dns_name
+  sensitive   = true
+}
