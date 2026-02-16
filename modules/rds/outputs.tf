@@ -16,7 +16,7 @@ output "db_name" {
 output "db_username" {
   description = "Database master username"
   value       = aws_db_instance.this.username
-  sensitive = true
+  sensitive   = true
 }
 
 output "rds_security_group_id" {
