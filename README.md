@@ -8,7 +8,7 @@ ECR
 ECS  
 ALB  
 RDS  
-Secrets Manager
+Secrets Manager  
 Remote State(S3+Dynamo DB)  
 GitHub Actions CI(terraform fmt・terraform validate・tflint)  
 
