@@ -22,7 +22,7 @@ todo-web-app/
 ├── modules/   
 │   ├── alb/                      # ロードバランサー  
 │   ├── ecr/                      # コンテナレジストリ・スキャン  
-│   ├── ecs/                      # Nginxコンテナ  
+│   ├── ecs/                      # ECS Cluster・ECS task・ECS Service    
 │   ├── rds/                      # DB（PostgreSQL）  
 │   ├── secretsmanager/           # DBへの接続情報    
 │   └── vpc/                      # VPC・IGW・Subnet・NAT Gateway   
