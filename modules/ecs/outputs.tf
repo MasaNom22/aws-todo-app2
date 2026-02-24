@@ -41,3 +41,8 @@ output "log_group_name" {
   description = "The name of the CloudWatch log group"
   value       = aws_cloudwatch_log_group.this.name
 }
+
+output "exec_log_group_name" {
+  description = "The name of the CloudWatch log group for ECS Exec session logs"
+  value       = aws_cloudwatch_log_group.ecs_exec.name
+}
