@@ -6,6 +6,17 @@ resource "aws_ecs_cluster" "this" {
     value = "enabled"
   }
 
+  configuration {
+    execute_command_configuration {
+      logging = "OVERRIDE"
+
+      log_configuration {
+        cloud_watch_encryption_enabled = false
+        cloud_watch_log_group_name     = aws_cloudwatch_log_group.ecs_exec.name
+      }
+    }
+  }
+
   tags = merge(
     var.common_tags,
     {
@@ -118,6 +129,47 @@ resource "aws_iam_role" "task_role" {
   )
 }
 
+data "aws_iam_policy_document" "task_role_exec" {
+  statement {
+    sid    = "SSMMessagesAccess"
+    effect = "Allow"
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "CloudWatchLogsDescribe"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "CloudWatchLogsExecWrite"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents",
+    ]
+    resources = [
+      aws_cloudwatch_log_group.ecs_exec.arn,
+      "${aws_cloudwatch_log_group.ecs_exec.arn}:log-stream:*",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "task_role_exec" {
+  name   = "${var.project_name}-${var.environment}-ecs-exec"
+  role   = aws_iam_role.task_role.name
+  policy = data.aws_iam_policy_document.task_role_exec.json
+}
+
 resource "aws_cloudwatch_log_group" "this" {
   name              = "/ecs/${var.project_name}-${var.environment}-${var.container_name}"
   retention_in_days = var.log_retention_in_days
@@ -126,6 +178,18 @@ resource "aws_cloudwatch_log_group" "this" {
     var.common_tags,
     {
       Name = "/ecs/${var.project_name}-${var.environment}-${var.container_name}"
+    }
+  )
+}
+
+resource "aws_cloudwatch_log_group" "ecs_exec" {
+  name              = "/ecs/exec/${var.project_name}-${var.environment}"
+  retention_in_days = var.log_retention_in_days
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "/ecs/exec/${var.project_name}-${var.environment}"
     }
   )
 }
